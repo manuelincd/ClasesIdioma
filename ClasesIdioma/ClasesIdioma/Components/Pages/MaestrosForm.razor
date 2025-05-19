@@ -1,0 +1,84 @@
+﻿@page "/maestros/nueva"
+@page "/maestros/editar/{Id:int}"
+@rendermode InteractiveServer
+@inject NavigationManager _navigator;
+@inject IRepositorioMaestros _repositorio;
+<h2>@_mensaje Maestro</h2>
+<EditForm Model="_maestro" FormName="frmMaestro" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="row mb-3">
+        <label for="txtNombre" class="col-2 col-form-label">Nombre</label>
+        <div class="col-10">
+            <InputText id="txtNombre" class="form-control" @bind-Value="_maestro.Nombre" />
+            <ValidationMessage For="()=>_maestro.Nombre" />
+        </div>
+    </div>
+    <div class="row mb-3">
+        <label for="txtCorreo" class="col-2 col-form-label">Correo</label>
+        <div class="col-10">
+            <InputText id="txtCorreo" class="form-control" @bind-Value="_maestro.Correo" />
+            <ValidationMessage For="()=>_maestro.Correo" />
+        </div>
+    </div>
+    <div class="row mb-3">
+        <label for="txtTelefono" class="col-2 col-form-label">Teléfono</label>
+        <div class="col-10">
+            <InputText id="txtTelefono" class="form-control" @bind-Value="_maestro.Telefono" />
+            <ValidationMessage For="()=>_maestro.Telefono" />
+        </div>
+    </div>
+    <div class="row mb-3">
+        <label for="txtIdioma" class="col-2 col-form-label">Idioma</label>
+        <div class="col-10">
+            <InputSelect class="form-select" @bind-Value="_maestro.IdiomaId">
+                <option value="0" disabled="disabled">Seleccione idioma...</option>
+                @foreach (Idioma idioma in _idiomas)
+                {
+                    <option value="@idioma.Id">@idioma.Nombre</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <button class="btn btn-danger ms-3" @onclick="Cancelar" @onclick:preventDefault>Cancelar</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private string _mensaje = "";
+    private Maestro? _maestro = new();
+    private List<Idioma> _idiomas = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _idiomas = await _repositorio.GetIdiomas();
+        if (Id > 0)
+        {
+            _maestro = await _repositorio.GetById(Id);
+            _mensaje = "Modificar";
+        }
+        else
+        {
+            _mensaje = "Nuevo";
+        }
+    }
+
+    private async void Guardar()
+    {
+        if (Id > 0)
+        {
+            await _repositorio.Update(_maestro!);
+        }
+        else
+        {
+            await _repositorio.Add(_maestro!);
+        }
+        Cancelar();
+    }
+
+    private void Cancelar()
+    {
+        _navigator.NavigateTo("/maestros");
+    }
+}

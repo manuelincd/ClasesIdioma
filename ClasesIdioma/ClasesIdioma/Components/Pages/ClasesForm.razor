@@ -1,0 +1,100 @@
+﻿@page "/clases/nueva"
+@page "/clases/editar/{Id:int}"
+@rendermode InteractiveServer
+
+@inject NavigationManager Navigation
+@inject IRepositorioIdiomas RepoIdiomas
+@inject IRepositorioMaestros RepoMaestros
+@inject IRepositorioClases RepoClases
+
+<h3>@Titulo Clase</h3>
+
+<EditForm Model="ClaseActual" OnValidSubmit="GuardarClase">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Idioma</label>
+        <InputSelect class="form-control" @bind-Value="ClaseActual.IdiomaId" @onchange="ActualizarMaestros">
+            <option value="0">-- Seleccione idioma --</option>
+            @foreach (var idioma in IdiomasDisponibles)
+            {
+                <option value="@idioma.Id">@idioma.Nombre</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Maestro</label>
+        <InputSelect class="form-control" @bind-Value="ClaseActual.MaestroId">
+            <option value="0">-- Seleccione maestro --</option>
+            @foreach (var maestro in MaestrosFiltrados)
+            {
+                <option value="@maestro.Id">@maestro.Nombre</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Nivel</label>
+        <InputText class="form-control" @bind-Value="ClaseActual.Nivel" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Horario</label>
+        <InputText class="form-control" @bind-Value="ClaseActual.Horario" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private string Titulo = "Nueva";
+    private Clase ClaseActual = new();
+    private List<Idioma> IdiomasDisponibles = new();
+    private List<Maestro> MaestrosFiltrados = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IdiomasDisponibles = await RepoIdiomas.GetAll();
+
+        if (Id > 0)
+        {
+            Titulo = "Editar";
+            ClaseActual = await RepoClases.GetById(Id);
+            MaestrosFiltrados = await RepoMaestros.GetByIdiomaId(ClaseActual.IdiomaId);
+        }
+    }
+
+    private async Task ActualizarMaestros(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int idiomaId) && idiomaId > 0)
+        {
+            ClaseActual.IdiomaId = idiomaId;
+            MaestrosFiltrados = await RepoMaestros.GetByIdiomaId(idiomaId);
+        }
+        else
+        {
+            MaestrosFiltrados = new List<Maestro>();
+        }
+    }
+
+    private async Task GuardarClase()
+    {
+        if (Id > 0)
+            await RepoClases.Update(ClaseActual);
+        else
+            await RepoClases.Add(ClaseActual);
+
+        Navigation.NavigateTo("/clases");
+    }
+
+    private void Cancelar()
+    {
+        Navigation.NavigateTo("/clases");
+    }
+}
