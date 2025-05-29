@@ -24,6 +24,7 @@ else
                 <th>Correo</th>
                 <th>Teléfono</th>
                 <th>Fecha de Inscripción</th>
+                <th>Clases</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -35,6 +36,15 @@ else
                     <td>@estudiante.Correo</td>
                     <td>@estudiante.Telefono</td>
                     <td>@estudiante.Fecha</td>
+                    <td>
+                        @if (estudiante.Clases != null)
+                        {
+                            foreach (var clase in estudiante.Clases)
+                            {
+                                <span class="badge bg-secondary">@($"{clase.Idioma.Nombre} - {clase.Maestro.Nombre} - {clase.Nivel} ({clase.Horario})")</span>
+                            }
+                        }
+                    </td>
                     <td>
                         <button class="btn btn-sm" title="Modificar" @onclick="()=>Modificar(estudiante.Id)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">

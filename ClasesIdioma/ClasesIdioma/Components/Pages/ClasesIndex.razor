@@ -27,6 +27,7 @@ else
                 <th>Maestro</th>
                 <th>Nivel</th>
                 <th>Horario</th>
+                <th>Estudiantes</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -38,6 +39,15 @@ else
                     <td>@clase.Maestro?.Nombre</td>
                     <td>@clase.Nivel</td>
                     <td>@clase.Horario</td>
+                    <td>
+                        @if (clase.Estudiantes != null)
+                        {
+                            foreach (var estudiante in clase.Estudiantes)
+                            {
+                                <span class="badge bg-secondary">@estudiante.Nombre</span>
+                            }
+                        }
+                    </td>
                     <td>
                         <button class="btn btn-sm" title="Modificar" @onclick="() => Modificar(clase.Id)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">

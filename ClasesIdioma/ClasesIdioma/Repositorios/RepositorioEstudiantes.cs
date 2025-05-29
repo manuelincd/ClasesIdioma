@@ -16,6 +16,9 @@ namespace ClasesIdioma.Repositorios
         {
             return await _context.Estudiantes
                 .Include(e => e.Clases) 
+                .ThenInclude(c => c.Idioma) 
+                .Include(e => e.Clases)
+                .ThenInclude(c => c.Maestro) 
                 .ToListAsync();
         }
 

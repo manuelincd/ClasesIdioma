@@ -18,8 +18,7 @@ namespace ClasesIdioma.Repositorios
         public async Task<List<Maestro>> GetByIdiomaId(int idiomaId)
         {
             return await _context.Maestros
-                .Where(maestro => maestro.IdiomaId == idiomaId)  
-                .OrderBy(maestro => maestro.Nombre)              
+                .Where(m => m.IdiomaId == idiomaId)            
                 .ToListAsync();                                 
         }
         public async Task<List<Idioma>> GetIdiomas()

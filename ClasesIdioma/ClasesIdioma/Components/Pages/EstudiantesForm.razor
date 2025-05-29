@@ -3,6 +3,8 @@
 @rendermode InteractiveServer
 @inject NavigationManager _navigator;
 @inject IRepositorioEstudiantes _repositorio;
+@inject IRepositorioClases _repositorioClases;
+
 <h2>@_mensaje Estudiante</h2>
 <EditForm Model="_estudiante" FormName="frmEstudiante" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
@@ -27,6 +29,28 @@
             <ValidationMessage For="()=>_estudiante.Telefono" />
         </div>
     </div>
+    <div class="mb-3 row">
+        <label for="txtClases" class="col-sm-2 col-form-label">Clases</label>
+        <div class="col-sm-10">
+            <div class="form-group">
+                @foreach (Clase clase in _clases)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="checkbox-@clase.Id"
+                               @onchange="e => OnCheckboxChanged(e, clase.Id)"
+                               checked="@_clasesIdSeleccionados.Contains(clase.Id)" />
+
+                        <label class="form-check-label" for="checkbox-@clase.Id">
+                            @($"{clase.Idioma.Nombre} - {clase.Maestro.Nombre} - {clase.Nivel} ({clase.Horario})")
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
     <button type="submit" class="btn btn-primary">Guardar</button>
     <button class="btn btn-danger ms-3" @onclick="Cancelar" @onclick:preventDefault>Cancelar</button>
 </EditForm>
@@ -36,13 +60,22 @@
     public int Id { get; set; }
     private string _mensaje = "";
     private Estudiante? _estudiante = new();
+    private List<Clase> _clases = new();
+    private List<int> _clasesIdSeleccionados = new();
 
     protected override async Task OnInitializedAsync()
     {
+        _clases = await _repositorioClases.GetAll();
+
         if (Id > 0)
         {
             _estudiante = await _repositorio.GetById(Id);
             _mensaje = "Modificar";
+
+            if (_estudiante?.Clases != null)
+            {
+                _clasesIdSeleccionados = _estudiante.Clases.Select(c => c.Id).ToList();
+            }
         }
         else
         {
@@ -52,6 +85,15 @@
 
     private async void Guardar()
     {
+        _estudiante.Clases = new List<Clase>();
+        foreach (int id in _clasesIdSeleccionados)
+        {
+            var clase = await _repositorioClases.GetById(id);
+            if (clase != null)
+            {
+                _estudiante.Clases.Add(clase);
+            }
+        }
         if (Id > 0)
         {
             await _repositorio.Update(_estudiante!);
@@ -67,5 +109,20 @@
     private void Cancelar()
     {
         _navigator.NavigateTo("/estudiantes");
+    }
+
+    private void OnCheckboxChanged(ChangeEventArgs e, int id)
+    {
+        bool isChecked = (bool)e.Value;
+
+        if (isChecked)
+        {
+            if (!_clasesIdSeleccionados.Contains(id))
+                _clasesIdSeleccionados.Add(id);
+        }
+        else
+        {
+            _clasesIdSeleccionados.Remove(id);
+        }
     }
 }

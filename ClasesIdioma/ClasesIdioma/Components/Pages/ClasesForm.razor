@@ -1,6 +1,7 @@
 ﻿@page "/clases/nueva"
 @page "/clases/editar/{Id:int}"
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Forms
 
 @inject NavigationManager Navigation
 @inject IRepositorioIdiomas RepoIdiomas
@@ -11,11 +12,10 @@
 
 <EditForm Model="ClaseActual" OnValidSubmit="GuardarClase">
     <DataAnnotationsValidator />
-    <ValidationSummary />
 
     <div class="mb-3">
         <label class="form-label">Idioma</label>
-        <InputSelect class="form-control" @bind-Value="ClaseActual.IdiomaId" @onchange="ActualizarMaestros">
+        <InputSelect class="form-control" @bind-Value="ClaseActual.IdiomaId">
             <option value="0">-- Seleccione idioma --</option>
             @foreach (var idioma in IdiomasDisponibles)
             {
@@ -26,14 +26,23 @@
 
     <div class="mb-3">
         <label class="form-label">Maestro</label>
-        <InputSelect class="form-control" @bind-Value="ClaseActual.MaestroId">
-            <option value="0">-- Seleccione maestro --</option>
-            @foreach (var maestro in MaestrosFiltrados)
-            {
-                <option value="@maestro.Id">@maestro.Nombre</option>
-            }
-        </InputSelect>
+        <div class="input-group">
+            <InputSelect @bind-Value="ClaseActual.MaestroId" class="form-control">
+                <option value="0">-- Seleccione un maestro --</option>
+                @if (MaestrosFiltrados != null)
+                {
+                    @foreach (var maestro in MaestrosFiltrados)
+                    {
+                        <option value="@maestro.Id">@($"{maestro.Nombre} - {maestro.Idioma.Nombre}")</option>
+                    }
+                }
+            </InputSelect>
+            <button type="button" class="btn btn-outline-secondary" @onclick="CargarMaestros">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+        </div>
     </div>
+
 
     <div class="mb-3">
         <label class="form-label">Nivel</label>
@@ -66,16 +75,16 @@
         {
             Titulo = "Editar";
             ClaseActual = await RepoClases.GetById(Id);
-            MaestrosFiltrados = await RepoMaestros.GetByIdiomaId(ClaseActual.IdiomaId);
+            await CargarMaestros();
         }
     }
 
-    private async Task ActualizarMaestros(ChangeEventArgs e)
+    private async Task CargarMaestros()
     {
-        if (int.TryParse(e.Value?.ToString(), out int idiomaId) && idiomaId > 0)
+        if (ClaseActual.IdiomaId > 0)
         {
-            ClaseActual.IdiomaId = idiomaId;
-            MaestrosFiltrados = await RepoMaestros.GetByIdiomaId(idiomaId);
+            MaestrosFiltrados = await RepoMaestros.GetByIdiomaId(ClaseActual.IdiomaId);
+            StateHasChanged();
         }
         else
         {
@@ -90,11 +99,11 @@
         else
             await RepoClases.Add(ClaseActual);
 
-        Navigation.NavigateTo("/clases");
+        Navigation.NavigateTo("/");
     }
 
     private void Cancelar()
     {
-        Navigation.NavigateTo("/clases");
+        Navigation.NavigateTo("/");
     }
 }
