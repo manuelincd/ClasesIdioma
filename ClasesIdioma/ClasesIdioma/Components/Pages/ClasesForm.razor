@@ -16,7 +16,7 @@
     <div class="mb-3">
         <label class="form-label">Idioma</label>
         <InputSelect class="form-control" @bind-Value="ClaseActual.IdiomaId">
-            <option value="0">-- Seleccione idioma --</option>
+            <option value="0"> Seleccione idioma </option>
             @foreach (var idioma in IdiomasDisponibles)
             {
                 <option value="@idioma.Id">@idioma.Nombre</option>
@@ -28,7 +28,7 @@
         <label class="form-label">Maestro</label>
         <div class="input-group">
             <InputSelect @bind-Value="ClaseActual.MaestroId" class="form-control">
-                <option value="0">-- Seleccione un maestro --</option>
+                <option value="0"> Seleccione un maestro </option>
                 @if (MaestrosFiltrados != null)
                 {
                     @foreach (var maestro in MaestrosFiltrados)
